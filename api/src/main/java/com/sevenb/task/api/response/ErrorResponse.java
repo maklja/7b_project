@@ -1,12 +1,16 @@
 package com.sevenb.task.api.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ErrorResponse {
-    private final int httpCode;
-    private final int errorCode;
-    private final String message;
+    private int httpCode;
+    private int errorCode;
+    private String message;
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 
 @Data
 @Document
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Tweet {
 
     @Id

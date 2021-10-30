@@ -32,10 +32,10 @@ public class UrlUtils {
         return baseUrl + "?" + createQueryParamsUrl(queryParams);
     }
 
-    private static String createQueryParamsUrl(final Map<String, Collection<String>> queryParams) {
+    public static String createQueryParamsUrl(final Map<String, Collection<String>> queryParams) {
         return queryParams.entrySet()
                 .stream()
-                .filter(entry-> entry.getValue() != null)
+                .filter(entry -> entry.getValue() != null)
                 .map(entry -> {
                     final var queryParamName = entry.getKey();
                     final var queryParamValues = entry.getValue();

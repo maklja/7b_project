@@ -1,14 +1,16 @@
 package com.sevenb.task.api.response;
 
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Collection;
 
-@Getter
-@RequiredArgsConstructor
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TweetPaginationResponse {
-    private final Collection<TweetResponse> tweets;
-    private final String nextPage;
+    private Collection<TweetResponse> tweets;
+    private String nextPage;
 }

@@ -9,8 +9,10 @@ import com.sevenb.task.api.response.TweetResponse;
 import com.sevenb.task.api.service.CreateTweetService;
 import com.sevenb.task.api.service.DeleteTweetService;
 import com.sevenb.task.api.service.RetrieveTweetsService;
+import com.sevenb.task.api.validation.HashTag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +26,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +38,8 @@ import java.util.Set;
 @RestController
 @RequiredArgsConstructor
 @ApiV1
-@RequestMapping("tweets")
+@RequestMapping(value = "tweets", produces = MediaType.APPLICATION_JSON_VALUE)
+@Validated
 public class TweetController {
     private final RetrieveTweetsService retrieveTweetsService;
     private final CreateTweetService createTweetService;
@@ -41,18 +48,11 @@ public class TweetController {
     @GetMapping
     public TweetPaginationResponse retrieveTweets(
             final HttpServletRequest request,
-            @RequestParam(value = "hashTag", required = false) final Set<String> hashTags,
-            @RequestParam(value = "username", required = false) final Set<String> usernames,
-            @RequestParam(defaultValue = "50", required = false) final int limit,
-            @RequestParam(defaultValue = "0", required = false) final int offset
+            @RequestParam(value = "hashTag", required = false) final Set<@HashTag String> hashTags,
+            @RequestParam(value = "username", required = false) final Set<@NotBlank String> usernames,
+            @RequestParam(defaultValue = "${pagination.default.limit}", required = false) @Min(1) @Max(200) final int limit,
+            @RequestParam(defaultValue = "${pagination.default.offset}", required = false) @Min(0) final int offset
     ) {
-        final var nextPageQueryParams = new HashMap<String, Collection<String>>();
-        nextPageQueryParams.put("hashTag", hashTags);
-        nextPageQueryParams.put("username", usernames);
-        nextPageQueryParams.put("limit", Collections.singleton(Integer.toString(limit)));
-        nextPageQueryParams.put("offset", Collections.singleton(Integer.toString(offset + limit)));
-        final var nextPageUrl = UrlUtils.createUrlFromHttpRequest(request, nextPageQueryParams);
-
         final var retrieveTweetsRequest = RetrieveTweetsRequest
                 .builder()
                 .hashTags(hashTags)
@@ -62,12 +62,19 @@ public class TweetController {
                 .build();
         final var tweets = retrieveTweetsService.sliceTweets(retrieveTweetsRequest);
 
+        final var nextPageQueryParams = new HashMap<String, Collection<String>>();
+        nextPageQueryParams.put("hashTag", hashTags);
+        nextPageQueryParams.put("username", usernames);
+        nextPageQueryParams.put("limit", Collections.singleton(Integer.toString(limit)));
+        nextPageQueryParams.put("offset", Collections.singleton(Integer.toString(offset + tweets.size())));
+        final var nextPageUrl = UrlUtils.createUrlFromHttpRequest(request, nextPageQueryParams);
+
         return new TweetPaginationResponse(tweets, nextPageUrl);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TweetResponse createTweet(@Validated @RequestBody final CreateTweetRequest createTweetRequest) {
+    public TweetResponse createTweet(@Valid @RequestBody final CreateTweetRequest createTweetRequest) {
         return createTweetService.createNewTweet(createTweetRequest);
     }
 

@@ -12,11 +12,11 @@ import static org.springframework.web.method.HandlerTypePredicate.forAnnotation;
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurationSupport {
 
-    private static final String ROUTES_PREFIX = "/api/v1";
+    public static final String V1_ROUTES_PREFIX = "/api/v1";
 
     @Override
     protected void configurePathMatch(final PathMatchConfigurer configurer) {
-        configurer.addPathPrefix(ROUTES_PREFIX,
+        configurer.addPathPrefix(V1_ROUTES_PREFIX,
                 forAnnotation(RestController.class).and(HandlerTypePredicate.forAnnotation(ApiV1.class))
         );
     }

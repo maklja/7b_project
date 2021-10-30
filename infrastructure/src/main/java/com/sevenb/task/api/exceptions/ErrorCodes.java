@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCodes {
     UNAUTHORIZED(10),
     FORBIDDEN(20),
+    INVALID_INPUT(30),
     TWEET_NOT_FOUND(100);
 
     private final int code;
