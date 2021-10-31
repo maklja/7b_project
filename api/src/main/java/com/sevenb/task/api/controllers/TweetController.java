@@ -4,12 +4,18 @@ import com.sevenb.task.api.controllers.utils.UrlUtils;
 import com.sevenb.task.api.controllers.version.ApiV1;
 import com.sevenb.task.api.request.CreateTweetRequest;
 import com.sevenb.task.api.request.RetrieveTweetsRequest;
+import com.sevenb.task.api.response.ErrorResponse;
 import com.sevenb.task.api.response.TweetPaginationResponse;
 import com.sevenb.task.api.response.TweetResponse;
 import com.sevenb.task.api.service.CreateTweetService;
 import com.sevenb.task.api.service.DeleteTweetService;
 import com.sevenb.task.api.service.RetrieveTweetsService;
 import com.sevenb.task.api.validation.HashTag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,6 +51,13 @@ public class TweetController {
     private final CreateTweetService createTweetService;
     private final DeleteTweetService deleteTweetService;
 
+    @Operation(summary = "Retrieve all tweet by filter", description = "Retrieve all tweet by filter. Supported filters are hashTag, username, offset and limit.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tweets are successfully filtered and acquired"),
+            @ApiResponse(responseCode = "400", description = "Invalid filter input values", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "406", description = "Unsupported response type", content = @Content(schema = @Schema())),
+    })
     @GetMapping
     public TweetPaginationResponse retrieveTweets(
             final HttpServletRequest request,
@@ -72,12 +85,29 @@ public class TweetController {
         return new TweetPaginationResponse(tweets, nextPageUrl);
     }
 
+    @Operation(summary = "Create a new tweet", description = "Create a new tweet.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Tweets is successfully created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input values", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "406", description = "Unsupported response type", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "415", description = "Unsupported request type", content = @Content(schema = @Schema())),
+    })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TweetResponse createTweet(@Valid @RequestBody final CreateTweetRequest createTweetRequest) {
         return createTweetService.createNewTweet(createTweetRequest);
     }
 
+
+    @Operation(summary = "Delete a tweet", description = "Delete a tweet. Note that only owner can delete a tweet.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tweets is successfully deleted"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "403", description = "User has no permissions to delete a tweet", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "404", description = "Tweet with required id was not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "406", description = "Unsupported response type", content = @Content(schema = @Schema())),
+    })
     @DeleteMapping("/{tweetId}")
     @PreAuthorize("hasPermission(#tweetId, 'tweet', 'delete')")
     public TweetResponse deleteTweet(@PathVariable final String tweetId) {

@@ -14,6 +14,8 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+
+        <open.api.version>1.5.12</open.api.version>
     </properties>
 
     <dependencies>
@@ -21,6 +23,19 @@
             <groupId>com.7b.task</groupId>
             <artifactId>infrastructure</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${open.api.version}</version>
         </dependency>
 
     </dependencies>

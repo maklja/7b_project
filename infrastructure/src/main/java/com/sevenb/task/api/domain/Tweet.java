@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -19,9 +20,11 @@ public class Tweet {
     @EqualsAndHashCode.Include
     private String id;
     private String body;
+    @Indexed
     private Set<String> hashTags;
 
     @CreatedBy
+    @Indexed
     private String createdBy;
 
     @CreatedDate
