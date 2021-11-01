@@ -1,0 +1,262 @@
+openapi: '3.0.2'
+info:
+  title: SB-Twitter
+  version: '1.0'
+  description: >-
+    Small "restlike" API that mimics some basic functionalities of Twitter.
+servers:
+  - url: https://api.sb-tweets.test/
+paths:
+  /v1/tweets:
+    post:
+      summary: Post a new tweet to the service
+      parameters:
+        - in: header
+          name: X-Username
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9_]{4,32}$'
+          description: >-
+            Required header that should contain username of a person posting
+            this tweet. Username should follow the specified pattern, and
+            we do not need to do any authentication on the backend.
+            We believe you.
+          example: sbg_user1
+      requestBody:
+        description: Json object containing tweet text
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTweetReq'
+      responses:
+        '201':
+          description: Returns created tweet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TweetResp'
+        '400':
+          description: Error returned when some of the request validations fails.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Error returned when username header is missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: >-
+        Queries the tweets, returning a page of tweets that match the provided query params sorted
+        by the time created. Note that multiple query params for hash tags and usernames could be
+        specified. If that is the case, tweets that have at least one of the specified hash tags
+        match the query. Same goes for username.
+      parameters:
+        - in: header
+          name: X-Username
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9_]{4,32}$'
+          description: >-
+            Required username header. Serves no purpose in querying.
+          example: sbg_user1
+        - in: query
+          name: hashTag
+          description: >-
+            Return tweets that have a given hash tag. If multiple tags are specified, return
+            tweets that have at least one of the specified tags.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: username
+          description: >-
+            Return only tweets tweeted by the specified users. If multiple usernames are specified,
+            return tweets tweeted by any of the specified users.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - in: query
+          name: limit
+          description: Size of the page of results.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - in: query
+          name: offset
+          description: Offset of the page of results.
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: A page (potentially empty) of tweets matching the query params.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TweetsPageResp'
+        '401':
+          description: Error returned when username header is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Bad request, some of the specified parametars are not valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/tweets/{tweetId}:
+    delete:
+      summary: >-
+        Deletes a tweet from the system. User can only
+        delete his own tweets (username must match).
+      parameters:
+        - in: header
+          name: X-Username
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9_]{4,32}$'
+          description: >-
+            Required header that should contain username of a person posting
+            this tweet. Username should follow the specified pattern, and
+            we do not need to do any authentication on the backend.
+            We believe you.
+          example: sbg_user1
+        - in: path
+          name: tweetId
+          schema:
+            type: string
+          description: Id of a tweet.
+          required: true
+          example: 4dkPRdTJGEKul75FYUnQ
+      responses:
+        '200':
+          description: Tweet deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TweetResp'
+        '401':
+          description: Error returned when username header is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Error returned when user tried to delete somebody elses tweet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Error returned when tweet not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      description: Error object that will be returned by the API on exceptional situations.
+      properties:
+        httpCode:
+          type: integer
+          description: HTTP status code of this error, i.e. 400, 409, 502..
+          example: 404
+        errorCode:
+          type: integer
+          description: >-
+            Integer identifier of the subtype of error. Useful to make distinction between same
+            http error codes.
+          example: 103
+        message:
+          type: string
+          description: Human readable text message describing the error.
+          example: Requested location doesn't exists.
+
+    PostTweetReq:
+      type: object
+      description: >-
+        Post a new tweet.
+      properties:
+        tweetBody:
+          type: string
+          description: Body of a tweet.
+          maxLength: 320
+          example: Hello sb-twitter. This is my new tweet.
+        hashTags:
+          type: array
+          description: List of hash tags to go with a tweet.
+          maxItems: 5
+          nullable: true
+          items:
+            type: string
+            pattern: '^#[a-zA-Z]{2,16}$'
+          example: ['#life', '#hacks']
+
+    TweetResp:
+      type: object
+      properties:
+        tweetId:
+          type: string
+          description: Some unique identifier of a tweet in a system.
+          example: 4dkPRdTJGEKul75FYUnQ
+        tweetBody:
+          type: string
+          description: Body of a tweet.
+          example: Hello sb-twitter. This is my new tweet.
+        hashTags:
+          type: array
+          description: List of hash tags to go with a tweet.
+          items:
+            type: string
+          example: ['#life', '#hacks']
+        createdBy:
+          type: string
+          description: Username that posted the tweet.
+          example: sbg_user1
+        createdAt:
+          type: string
+          description: String formated date and time of tweet posting
+          format: date-time
+
+    TweetsPageResp:
+      type: object
+      properties:
+        tweets:
+          description: Array of tweet objects that are included in this page.
+          type: array
+          items:
+            $ref: "#/components/schemas/TweetResp"
+        nextPage:
+          description: >-
+            URL to the next page of results, if there are more results.
+            If this is the last page, this field should be omitted.
+          type: string
+          format: uri
+          nullable: true
+          example: >-
+            https://api.sb-tweets.test/v1/tweets?limit=5&offset=10&hashTag=%23life&hashTag=%23hacks
+

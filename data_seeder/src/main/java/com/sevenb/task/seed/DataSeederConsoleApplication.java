@@ -55,7 +55,6 @@ public class DataSeederConsoleApplication implements CommandLineRunner {
         }
 
         final var reader = new BufferedReader(new InputStreamReader(fileStream));
-        ;
         final var lines = new ArrayList<String>(50);
         while (reader.readLine() != null) {
             lines.add(reader.readLine());

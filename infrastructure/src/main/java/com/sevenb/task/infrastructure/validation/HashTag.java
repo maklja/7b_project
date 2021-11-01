@@ -10,10 +10,12 @@ import java.lang.annotation.Target;
 
 @Documented
 @Constraint(validatedBy = HashTagValidator.class)
-@Target( { ElementType.METHOD, ElementType.FIELD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HashTag {
     String message() default "Hash tag must start with #";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

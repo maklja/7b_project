@@ -1,8 +1,8 @@
 package com.sevenb.task.api.config;
 
+import com.sevenb.task.api.response.ErrorResponse;
 import com.sevenb.task.infrastructure.exceptions.EntityNotFoundException;
 import com.sevenb.task.infrastructure.exceptions.ErrorCodes;
-import com.sevenb.task.api.response.ErrorResponse;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -69,7 +69,7 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(value = ConstraintViolationException.class)
-    protected ResponseEntity<Object> handleBadRequest(final ConstraintViolationException ex, WebRequest request) {
+    protected ResponseEntity<Object> handleBadRequest(final ConstraintViolationException ex, final WebRequest request) {
         return handleExceptionInternal(ex, createBadRequestErrorResponse(ex.getMessage()), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 }
