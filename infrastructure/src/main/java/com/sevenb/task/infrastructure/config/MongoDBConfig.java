@@ -2,8 +2,10 @@ package com.sevenb.task.infrastructure.config;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.security.core.Authentication;
@@ -14,6 +16,7 @@ import java.util.Optional;
 
 @Configuration
 @EnableMongoAuditing
+@Slf4j
 public class MongoDBConfig {
 
     @Bean
@@ -25,8 +28,9 @@ public class MongoDBConfig {
     }
 
     @Bean
-    public MongoClient mongoClient() {
-        // TODO extract to configuration
-        return MongoClients.create("mongodb://localhost:27017,localhost:27018,localhost:27019/test");
+    public MongoClient mongoClient(final Environment env) {
+        final var connectionString = env.getRequiredProperty("db.connection-string");
+        log.info("MongoDB connection string {}", connectionString);
+        return MongoClients.create(connectionString);
     }
 }
