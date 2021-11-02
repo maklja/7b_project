@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -25,6 +26,8 @@ import java.util.stream.IntStream;
 @SpringBootApplication
 @RequiredArgsConstructor
 public class DataSeederConsoleApplication implements CommandLineRunner {
+    private static final String CLEAR_PARAMETER = "--clear";
+    private static final int MAX_HASH_TAGS = 10;
     private static final int BATCH_CHUNK_SIZE = 500;
     private static final int MAX_DATA_SEED = 10_000;
     private static final Random rnd = new Random();
@@ -38,7 +41,7 @@ public class DataSeederConsoleApplication implements CommandLineRunner {
         tweet.setBody(tweetBody.get(rnd.nextInt(tweetBody.size() - 1)));
         tweet.setCreatedBy(usernames.get(rnd.nextInt(usernames.size() - 1)));
 
-        final var maxHashTags = Math.max(1, rnd.nextInt(10));
+        final var maxHashTags = Math.max(1, rnd.nextInt(MAX_HASH_TAGS));
         tweet.setHashTags(IntStream.range(0, maxHashTags)
                 .mapToObj(i -> hashTags.get(rnd.nextInt(hashTags.size() - 1)))
                 .collect(Collectors.toSet())
@@ -63,13 +66,20 @@ public class DataSeederConsoleApplication implements CommandLineRunner {
         return lines;
     }
 
+    private static boolean clearTweets(final String... args) {
+        return Arrays.asList(args).contains(CLEAR_PARAMETER);
+    }
+
     public static void main(final String[] args) {
         SpringApplication.run(DataSeederConsoleApplication.class, args).close();
     }
 
     @Override
     public void run(final String... args) {
-        mongoOps.dropCollection(Tweet.class);
+        if (clearTweets(args)) {
+            log.info("Clearing tweets");
+            mongoOps.dropCollection(Tweet.class);
+        }
 
         final var tweets = IntStream.range(0, MAX_DATA_SEED)
                 .mapToObj(i -> createRandomTweet())

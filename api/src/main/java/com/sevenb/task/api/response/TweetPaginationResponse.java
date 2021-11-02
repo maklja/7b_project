@@ -1,6 +1,5 @@
 package com.sevenb.task.api.response;
 
-
 import com.sevenb.task.infrastructure.response.TweetResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;

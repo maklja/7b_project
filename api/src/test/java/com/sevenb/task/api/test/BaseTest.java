@@ -48,7 +48,7 @@ abstract class BaseTest {
     @Value("${pagination.default.limit}")
     int defaultLimit;
 
-    protected boolean compareInstantWithoutMillis(final String dateTime1, final String dateTime2) {
+    protected static boolean compareInstantWithoutMillis(final String dateTime1, final String dateTime2) {
         final var instant1 = Instant.parse(dateTime1).truncatedTo(ChronoUnit.MILLIS);
         final var instant2 = Instant.parse(dateTime2).truncatedTo(ChronoUnit.MILLIS);
 

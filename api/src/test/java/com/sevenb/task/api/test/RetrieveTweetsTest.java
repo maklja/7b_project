@@ -2,13 +2,13 @@ package com.sevenb.task.api.test;
 
 import com.sevenb.task.api.config.WebMvcConfig;
 import com.sevenb.task.api.controllers.utils.UrlUtils;
-import com.sevenb.task.infrastructure.domain.Tweet;
-import com.sevenb.task.infrastructure.exceptions.ErrorCodes;
 import com.sevenb.task.api.response.ErrorResponse;
 import com.sevenb.task.api.response.TweetPaginationResponse;
+import com.sevenb.task.api.test.fixtures.TweetRequestFixture;
+import com.sevenb.task.infrastructure.domain.Tweet;
+import com.sevenb.task.infrastructure.exceptions.ErrorCodes;
 import com.sevenb.task.infrastructure.response.TweetResponse;
 import com.sevenb.task.infrastructure.service.CreateTweetService;
-import com.sevenb.task.api.test.fixtures.TweetRequestFixture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,6 +46,22 @@ class RetrieveTweetsTest extends BaseTest {
     private TweetResponse catsFunTweet;
     private TweetResponse catsDogsTweet;
 
+    private static void assertTweets(final TweetResponse expectedTweet, final TweetResponse actualTweet) {
+        assertNotNull(actualTweet);
+        assertEquals(expectedTweet.getTweetId(), actualTweet.getTweetId());
+        assertEquals(expectedTweet.getTweetBody(), actualTweet.getTweetBody());
+        assertEquals(expectedTweet.getCreatedBy(), actualTweet.getCreatedBy());
+        assertTrue(expectedTweet.getHashTags().containsAll(actualTweet.getHashTags()));
+        assertTrue(compareInstantWithoutMillis(expectedTweet.getCreatedAt(), actualTweet.getCreatedAt()));
+    }
+
+    private static void assertNextPageUrl(final String actualNextPageUrl,
+                                          final Map<String, Collection<String>> queryParams) {
+        final var queryParamsStr = UrlUtils.createQueryParamsUrl(queryParams);
+        final var expectedNextPageUrl = NEXT_PAGE_BASE_URL + "?" + queryParamsStr;
+        assertEquals(expectedNextPageUrl, actualNextPageUrl);
+    }
+
     @BeforeEach
     void setup() {
         mongoOps.dropCollection(Tweet.class);
@@ -69,22 +85,6 @@ class RetrieveTweetsTest extends BaseTest {
     @AfterEach
     void cleanup() {
         clearSecurityContextMock();
-    }
-
-    private void assertTweets(final TweetResponse expectedTweet, final TweetResponse actualTweet) {
-        assertNotNull(actualTweet);
-        assertEquals(expectedTweet.getTweetId(), actualTweet.getTweetId());
-        assertEquals(expectedTweet.getTweetBody(), actualTweet.getTweetBody());
-        assertEquals(expectedTweet.getCreatedBy(), actualTweet.getCreatedBy());
-        assertTrue(expectedTweet.getHashTags().containsAll(actualTweet.getHashTags()));
-        assertTrue(compareInstantWithoutMillis(expectedTweet.getCreatedAt(), actualTweet.getCreatedAt()));
-    }
-
-    private void assertNextPageUrl(final String actualNextPageUrl,
-                                   final Map<String, Collection<String>> queryParams) {
-        final var queryParamsStr = UrlUtils.createQueryParamsUrl(queryParams);
-        final var expectedNextPageUrl = NEXT_PAGE_BASE_URL + "?" + queryParamsStr;
-        assertEquals(expectedNextPageUrl, actualNextPageUrl);
     }
 
     @Test
