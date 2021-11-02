@@ -2,7 +2,7 @@
 
 Project has been done using Java 11, Spring boot and MongoDB. 
 This project has a three modules:
-- infrastructure - that contains busyness login and access to the database.
+- infrastructure - that contains business logic and access to the database.
 - api - that contains REST API and security.
 - data_seeder - Spring boot console application that can generate data for testing.
 

@@ -2,4 +2,4 @@
 
 sh ./mvnw package -DskipTests
 
-docker-compose  -f ./docker/docker-compose-run.yml up -d
+docker-compose -f ./docker/docker-compose-run.yml up -d
